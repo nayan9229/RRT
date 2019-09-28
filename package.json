@@ -15,7 +15,7 @@
     "twitter": "^1.7.1"
   },
   "scripts": {
-    "start": "npm run build && pm2-runtime start server.js --name=APISAPP",
+    "start": "pm2-runtime start server.js --name=APISAPP",
     "startui": "react-scripts start",
     "dev": "pm2-runtime start server.js --watch",
     "build": "react-scripts build",
