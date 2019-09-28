@@ -61,8 +61,11 @@ class Main extends Component {
             this.state.email, this.state.password
         ).then(() => {
             console.log("LOGIN_SUCCESS");
+            this.setState({ authError: '' })
         }).catch((err) => {
             console.log("LOGIN_ERROR");
+            console.log('======', err.message);
+            this.setState({ authError: '' + err.message })
         });
     }
 
@@ -95,10 +98,10 @@ class Main extends Component {
         firebase.auth().createUserWithEmailAndPassword(this.state.email, this.state.password).then(resp => {
             // return firestore.collection('users').doc(resp.user.uid).set({})
             console.log(resp);
-            this.setState({ authError: ''})
+            this.setState({ authError: '' })
         }).catch(err => {
             console.log('======', err.message);
-            this.setState({ authError: ''+ err.message })
+            this.setState({ authError: '' + err.message })
         });
     }
 
@@ -130,12 +133,17 @@ class Main extends Component {
             cState.setState({ accessToken: result.credential.accessToken, secret: result.credential.secret })
             cState.setState({ user: result.user })
             cState.setState({ result })
-            cState.setState({ isTwitter: false });
-            cState.setState({ isAuthenticated: true });
+            setTimeout(() => {
+                cState.setState({ isTwitter: false });
+                cState.setState({ isAuthenticated: true });
+            }, 1000);
             ls.set('token', result.credential.accessToken);
             ls.set('secret', result.credential.secret);
+            cState.setState({ authError: '' })
         }).catch(function (error) {
             console.log(error);
+            console.log('======', error.message);
+            cState.setState({ authError: error.message })
             // var errorCode = error.code;
             // var errorMessage = error.message;
             // var email = error.email;
@@ -237,10 +245,14 @@ class Main extends Component {
                                     <div className="mdl-card__title">
                                         <h2 className="mdl-card__title-text">Connect your twitter to continue</h2>
                                     </div>
-                                    <div className="mdl-cell mdl-cell--12-col" align="center">
-                                        <button onClick={this.loginWithTwitter} className="mdl-cell--6-col mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent">Connect Twitter</button>
+                                    <div className="mdl-card__supporting-text mdl-grid">
+                                        <b className="mdl-color-text--accent">{this.state.authError}</b>
+                                        <div className="mdl-cell mdl-cell--12-col" align="center">
+                                            <button onClick={this.loginWithTwitter} className="mdl-cell--6-col mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent">Connect Twitter</button>
+                                        </div>
                                     </div>
-                                </div></div>
+                                </div>
+                            </div>
                         ) : (<div></div>)}
                     </div>
                 </main>
