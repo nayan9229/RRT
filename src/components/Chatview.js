@@ -61,15 +61,19 @@ class Chatview extends Component {
       unifry[tweet.user.screen_name].name = tweet.user.name
       unifry[tweet.user.screen_name].profile_image_url_https = tweet.user.profile_image_url_https
       unifry[tweet.user.screen_name].isActive = false
-      if (i === 0) {
-        unifry[tweet.user.screen_name].isActive = true;
-      }
+      
       if (unifry[tweet.user.screen_name].tweets.length > 0) {
         unifry[tweet.user.screen_name].tweets.push(tweet);
       } else {
         unifry[tweet.user.screen_name].tweets = [];
         unifry[tweet.user.screen_name].tweets.push(tweet);
       }
+
+      if (i === 0) {
+        unifry[tweet.user.screen_name].isActive = true;
+        this.setState({ tweets: unifry[tweet.user.screen_name].tweets })
+      }
+
       if (tweet.user.in_reply_to_status_id) {
         if (!unifry[tweet.user.in_reply_to_status_id]) {
           unifry[tweet.user.in_reply_to_status_id] = {};
@@ -107,6 +111,7 @@ class Chatview extends Component {
     return (
       <div className="Chatview" >
         {/* <pre>{JSON.stringify(this.state)}</pre> */}
+        <div className="mdl-layout-spacer"></div>
         <div className="messaging" >
           <div className="inbox_msg">
             <div className="inbox_people">
