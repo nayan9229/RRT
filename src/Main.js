@@ -120,6 +120,7 @@ class Main extends Component {
         ls.set('secret', null);
         ls.remove('token');
         ls.remove('secret');
+        ls.remove('screen_name');
         e.preventDefault();
     }
 
@@ -132,6 +133,7 @@ class Main extends Component {
         firebase.auth().signInWithPopup(provider).then(function (result) {
             cState.setState({ accessToken: result.credential.accessToken, secret: result.credential.secret })
             cState.setState({ user: result.user })
+            console.log(result.additionalUserInfo.username);
             cState.setState({ result })
             setTimeout(() => {
                 cState.setState({ isTwitter: false });
@@ -139,6 +141,7 @@ class Main extends Component {
             }, 1000);
             ls.set('token', result.credential.accessToken);
             ls.set('secret', result.credential.secret);
+            ls.set('screen_name', result.additionalUserInfo.username);
             cState.setState({ authError: '' })
         }).catch(function (error) {
             console.log(error);

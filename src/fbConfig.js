@@ -16,13 +16,6 @@
 // firebase.initializeApp(config);
 // firebase.firestore().settings({ timestampsInSnapshots: true });
 // firebase.analytics();
-const Config = {
-    TWITTER_ACCESS_TOKEN_KEY: "1214359112-EiGP5Qo4rKqET4vCC0yVs3Y3vXbgYZS91zNI5CZ",
-    TWITTER_ACCESS_TOKEN_SECRET: "I10a3CgrutpQbY9QXGpPqzPLKX1cFMs7bIXCdhI6cJPBZ",
-    TWITTER_CONSUMER_SECRET: '4jzPuDGCNi37mgRBdztcDy0kfAVyNLzQqaTlIxrFJsTU0A81Fj',
-    TWITTER_CONSUMER_KEY:'TOZgWEdI6qsCMEhrlyAlqxSTB'
-}
-
 // export default Config
 // module.export = {
 //     Config

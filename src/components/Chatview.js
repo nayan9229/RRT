@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import './Chatview.css';
 import ls from 'local-storage'
+import socketIOClient from "socket.io-client";
 
 class Chatview extends Component {
   constructor() {
@@ -13,11 +14,32 @@ class Chatview extends Component {
     this.selectedUser = this.selectedUser.bind(this);
     this.getLatestTweete = this.getLatestTweete.bind(this);
     this.tweetTounify = this.tweetTounify.bind(this);
+    this.handleChange = this.handleChange.bind(this);
+    this.handleSubmit = this.handleSubmit.bind(this);
   }
 
   componentDidMount() {
-    this.getLatestTweete(ls.get('token'), ls.get('secret'));
+    if (ls.get('screen_name')) {
+      this.setState({ 'screen_name': ls.get('screen_name') });
+      this.getLatestTweete(ls.get('token'), ls.get('secret'), ls.get('screen_name'));
+
+      const socket = socketIOClient('/');
+      let cState = this;
+      socket.on('connect', () => {
+        console.log("Socket Connected");
+        socket.on(cState.state.screen_name, data => {
+          data = cState.tweetTounify([data]);
+          cState.setState({ data: data });
+        });
+      });
+      socket.on('disconnect', () => {
+        socket.off(cState.state.screen_name)
+        socket.removeAllListeners(cState.state.screen_name);
+        console.log("Socket Disconnected");
+      });
+    }
   }
+
   selectedUser(screen_name) {
     let data = this.state.data;
     for (const scn in data) {
@@ -31,9 +53,9 @@ class Chatview extends Component {
     this.setState({ data: data })
   }
 
-  getLatestTweete(token, secret) {
+  getLatestTweete(token, secret, screen_name) {
     let cState = this;
-    fetch('/apis/6IJiBbLkBcc8HsIpNYINhruTCQF2/status', {
+    fetch(`/apis/${screen_name}/mentions`, {
       method: 'post',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -47,11 +69,29 @@ class Chatview extends Component {
       .then(function (data) {
         data = cState.tweetTounify(data.data);
         cState.setState({ data: data });
+        cState.getDirectTweete(token, secret, screen_name);
       })
   }
-
+  getDirectTweete(token, secret, screen_name) {
+    let cState = this;
+    fetch(`/apis/${screen_name}/dm`, {
+      method: 'post',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        "token": token,
+        "secret": secret
+      })
+    })
+      .then(function (res) {
+        return res.json();
+      })
+      .then(function (data) {
+        data = cState.tweetTounify(data.events);
+        cState.setState({ data: data });
+      })
+  }
   tweetTounify(tweets) {
-    const unifry = {};
+    const unifry = this.state.data;
     tweets.forEach((tweet, i) => {
       if (!unifry[tweet.user.screen_name]) {
         unifry[tweet.user.screen_name] = {};
@@ -61,7 +101,7 @@ class Chatview extends Component {
       unifry[tweet.user.screen_name].name = tweet.user.name
       unifry[tweet.user.screen_name].profile_image_url_https = tweet.user.profile_image_url_https
       unifry[tweet.user.screen_name].isActive = false
-      
+
       if (unifry[tweet.user.screen_name].tweets.length > 0) {
         unifry[tweet.user.screen_name].tweets.push(tweet);
       } else {
@@ -90,7 +130,34 @@ class Chatview extends Component {
     });
     return unifry;
   }
-
+  handleChange = (e) => {
+    this.setState({
+      [e.target.id]: e.target.value
+    })
+  }
+  handleSubmit = (e) => {
+    e.preventDefault();
+    const token = ls.get('token');
+    const secret = ls.get('secret');
+    let cState = this;
+    fetch(`/apis/${this.state.screen_name}/send`, {
+      method: 'post',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        "token": token,
+        "secret": secret,
+        "status": cState.state.status
+      })
+    })
+      .then(function (res) {
+        cState.setState({ 'status': '' });
+        return res.json();
+      })
+      .then(function (data) {
+        console.log(data);
+        cState.setState({ 'status': '' });
+      })
+  }
   render() {
     const chats = [];
     for (const user in this.state.data) {
@@ -174,8 +241,8 @@ class Chatview extends Component {
               </div>
               <div className="type_msg">
                 <div className="input_msg_write">
-                  <input type="text" className="write_msg" placeholder="Type a message" />
-                  <button className="msg_send_btn" type="button"><i className="fa fa-paper-plane-o" aria-hidden="true"></i></button>
+                  <input id='status' type="text" className="write_msg" placeholder="Type a message" onChange={this.handleChange} />
+                  <button onClick={this.handleSubmit} className="msg_send_btn" type="button"><i className="material-icons md-light" aria-hidden="true">send</i></button>
                 </div>
               </div>
             </div>
