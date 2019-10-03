@@ -91,6 +91,23 @@ app.post('/apis/:uid/mentions', function (req, res) {
     stream(client, req.params.uid);
 });
 
+app.post('/apis/:uid/me', function (req, res) {
+    const secret = req.body.secret ? req.body.secret : CONFIG.TWITTER_ACCESS_TOKEN_KEY;
+    const token = req.body.token ? req.body.token : CONFIG.TWITTER_ACCESS_TOKEN_SECRET;
+    var client = new Twitter({
+        consumer_key: CONFIG.TWITTER_CONSUMER_KEY,
+        consumer_secret: CONFIG.TWITTER_CONSUMER_SECRET,
+        access_token_key: token,
+        access_token_secret: secret
+    });
+    client.get('statuses/user_timeline', function (error, tweets, response) {
+        res.send({ message: '', error: error, data: tweets });
+        // console.log(tweets);  // The favorites.
+        // console.log(response);  // Raw response object.
+    });
+    stream(client, req.params.uid);
+});
+
 app.post('/apis/:uid/send', function (req, res) {
     const secret = req.body.secret ? req.body.secret : CONFIG.TWITTER_ACCESS_TOKEN_KEY;
     const token = req.body.token ? req.body.token : CONFIG.TWITTER_ACCESS_TOKEN_SECRET;
@@ -100,17 +117,22 @@ app.post('/apis/:uid/send', function (req, res) {
         access_token_key: token,
         access_token_secret: secret
     });
-    if (req.body.status) {
-        client.post('statuses/update', { status: req.body.status })
+    if (req.body.status && req.body.statusId) {
+        // auto_populate_reply_metadata: true,
+        let options = { status: req.body.status, in_reply_to_status_id: req.body.statusId };
+        if (req.body.status.indexOf(`@${req.params.uid}`) < 0) {
+            options.auto_populate_reply_metadata = true;
+        }
+        client.post('statuses/update', options)
             .then(function (tweet) {
                 // console.log(tweet);
-                res.send({ message: 'Successfully Sent.', error: false, data:null });
+                res.send({ message: 'Successfully Sent.', error: false, data: null });
             })
             .catch(function (error) {
-                console.log(error);
-                res.send({ message: 'Something went wrong.', error: error, data:null });
+                // console.log(error);
+                res.send({ message: 'Something went wrong.', error: error, data: null });
             });
-    }else res.send({ message: 'Something went wrong.', error: true, data:null });
+    } else res.send({ message: 'Something went wrong.', error: true, data: null });
 });
 
 app.use('/apis/:uid/update', function (req, res) {

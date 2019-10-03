@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import './Main.css';
 // import StyledFirebaseAuth from "react-firebaseui/StyledFirebaseAuth"
 import firebase from "firebase"
-import Header from './components/Header';
 import Chatview from './components/Chatview';
 import ls from 'local-storage';
 var config = {
@@ -191,12 +190,12 @@ class Main extends Component {
                                             <b className="mdl-color-text--accent">{this.state.authError}</b>
                                             <input type="hidden" name="action" value="login" />
                                             <div className="mdl-textfield mdl-js-textfield mdl-textfield--floating-label mdl-cell mdl-cell--12-col">
-                                                <label className="mdl-textfield__label" htmlFor="email">Email</label>
-                                                <input className="mdl-textfield__input" type="email" id='email' onChange={this.handleChange} />
+                                                <input className="mdl-textfield__input" type="email" id='email' placeholder="Enter your email" onChange={this.handleChange} />
+                                                {/* <label className="mdl-textfield__label" htmlFor="email">Email</label> */}
                                             </div>
                                             <div className="mdl-textfield mdl-js-textfield mdl-textfield--floating-label mdl-cell mdl-cell--12-col">
-                                                <label className="mdl-textfield__label" htmlFor="password">Password</label>
-                                                <input className="mdl-textfield__input" type="password" id='password' onChange={this.handleChange} />
+                                                <input className="mdl-textfield__input" type="password" id='password' placeholder='Enter your password' onChange={this.handleChange} />
+                                                {/* <label className="mdl-textfield__label" htmlFor="password">Password</label> */}
                                             </div>
                                             <div className="mdl-cell mdl-cell--12-col" align="center">
                                                 <button type="submit" className="mdl-cell--5-col mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent"> SignIn </button>
@@ -219,20 +218,20 @@ class Main extends Component {
                                             <b className="mdl-color-text--accent">{this.state.authError}</b>
                                             <input type="hidden" name="action" value="login" />
                                             <div className="mdl-textfield mdl-js-textfield mdl-textfield--floating-label mdl-cell mdl-cell--12-col">
-                                                <label className="mdl-textfield__label" htmlFor="email">Email</label>
-                                                <input className="mdl-textfield__input" type="email" id='email' onChange={this.handleChange} />
+                                                <input className="mdl-textfield__input" type="email" id='email' placeholder='Enter your email' onChange={this.handleChange} />
+                                                {/* <label className="mdl-textfield__label" htmlFor="email">Email</label> */}
                                             </div>
                                             <div className="mdl-textfield mdl-js-textfield mdl-textfield--floating-label mdl-cell mdl-cell--12-col">
-                                                <label className="mdl-textfield__label" htmlFor="password">Password</label>
-                                                <input className="mdl-textfield__input" type="password" id='password' onChange={this.handleChange} />
+                                                <input className="mdl-textfield__input" type="password" id='password' placeholder='Enter your password' onChange={this.handleChange} />
+                                                {/* <label className="mdl-textfield__label" htmlFor="password">Password</label> */}
                                             </div>
                                             <div className="mdl-textfield mdl-js-textfield mdl-textfield--floating-label mdl-cell mdl-cell--12-col">
-                                                <label className="mdl-textfield__label" htmlFor="firstName">First Name</label>
-                                                <input className="mdl-textfield__input" type="text" id='firstName' onChange={this.handleChange} />
+                                                <input className="mdl-textfield__input" type="text" id='firstName' placeholder='Enter your First Name' onChange={this.handleChange} />
+                                                {/* <label className="mdl-textfield__label" htmlFor="firstName">First Name</label> */}
                                             </div>
                                             <div className="mdl-textfield mdl-js-textfield mdl-textfield--floating-label mdl-cell mdl-cell--12-col">
-                                                <label className="mdl-textfield__label" htmlFor="lastName">Last Name</label>
-                                                <input className="mdl-textfield__input" type="text" id='lastName' onChange={this.handleChange} />
+                                                <input className="mdl-textfield__input" type="text" id='lastName' placeholder='Enter your Last Name' onChange={this.handleChange} />
+                                                {/* <label className="mdl-textfield__label" htmlFor="lastName">Last Name</label> */}
                                             </div>
 
                                             <div className="mdl-cell mdl-cell--12-col" align="center">

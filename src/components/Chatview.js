@@ -51,6 +51,7 @@ class Chatview extends Component {
     data[screen_name].isActive = true;
     this.setState({ tweets: data[screen_name].tweets })
     this.setState({ data: data })
+    this.setState({ status: `@${screen_name} ` })
   }
 
   getLatestTweete(token, secret, screen_name) {
@@ -88,47 +89,77 @@ class Chatview extends Component {
       .then(function (data) {
         data = cState.tweetTounify(data.events);
         cState.setState({ data: data });
+        cState.getMeTweete(token, secret, screen_name);
       })
   }
+  getMeTweete(token, secret, screen_name) {
+    let cState = this;
+    fetch(`/apis/${screen_name}/me`, {
+      method: 'post',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        "token": token,
+        "secret": secret
+      })
+    })
+      .then(function (res) {
+        return res.json();
+      })
+      .then(function (data) {
+        data = cState.tweetTounifyMe(data.data);
+        cState.setState({ data: data });
+      })
+  }
+
+  tweetTounifyMe(tweets) {
+    let allTweets = this.state.data;
+    for (const sc_name in allTweets) {
+      if (allTweets.hasOwnProperty(sc_name)) {
+        const t = allTweets[sc_name];
+        tweets.forEach((tweet, i) => {
+          allTweets[sc_name].tweets.forEach((tt, index) => {
+            if (tt.id_str === tweet.in_reply_to_status_id_str) {
+              allTweets[sc_name].tweets.splice(index, 0, tweet);
+            }
+          });
+        });
+      }
+    }
+    return allTweets;
+  }
+
   tweetTounify(tweets) {
-    const unifry = this.state.data;
-    tweets.forEach((tweet, i) => {
-      if (!unifry[tweet.user.screen_name]) {
-        unifry[tweet.user.screen_name] = {};
-        unifry[tweet.user.screen_name].tweets = [];
-      }
-      unifry[tweet.user.screen_name].screen_name = tweet.user.screen_name
-      unifry[tweet.user.screen_name].name = tweet.user.name
-      unifry[tweet.user.screen_name].profile_image_url_https = tweet.user.profile_image_url_https
-      unifry[tweet.user.screen_name].isActive = false
-
-      if (unifry[tweet.user.screen_name].tweets.length > 0) {
-        unifry[tweet.user.screen_name].tweets.push(tweet);
-      } else {
-        unifry[tweet.user.screen_name].tweets = [];
-        unifry[tweet.user.screen_name].tweets.push(tweet);
-      }
-
-      if (i === 0) {
-        unifry[tweet.user.screen_name].isActive = true;
-        this.setState({ tweets: unifry[tweet.user.screen_name].tweets })
-      }
-
-      if (tweet.user.in_reply_to_status_id) {
-        if (!unifry[tweet.user.in_reply_to_status_id]) {
-          unifry[tweet.user.in_reply_to_status_id] = {};
-          unifry[tweet.user.in_reply_to_status_id].tweets = [];
+    try {
+      const unifry = this.state.data;
+      tweets.forEach((tweet, i) => {
+        if (!unifry[tweet.user.screen_name]) {
+          unifry[tweet.user.screen_name] = {};
+          unifry[tweet.user.screen_name].tweets = [];
         }
+        unifry[tweet.user.screen_name].screen_name = tweet.user.screen_name
+        unifry[tweet.user.screen_name].name = tweet.user.name
+        unifry[tweet.user.screen_name].profile_image_url_https = tweet.user.profile_image_url_https
+        unifry[tweet.user.screen_name].isActive = false
+        // if (tweet.in_reply_to_screen_name) {
 
-        if (unifry[tweet.user.in_reply_to_status_id].tweets.length > 0) {
-          unifry[tweet.user.in_reply_to_status_id].tweets.push(tweet);
+        // }else{
+        if (unifry[tweet.user.screen_name].tweets.length > 0) {
+          unifry[tweet.user.screen_name].tweets.push(tweet);
         } else {
-          unifry[tweet.user.in_reply_to_status_id].tweets = [];
-          unifry[tweet.user.in_reply_to_status_id].tweets.push(tweet);
+          unifry[tweet.user.screen_name].tweets = [];
+          unifry[tweet.user.screen_name].tweets.push(tweet);
         }
-      }
-    });
-    return unifry;
+        // }
+        if (i === 0) {
+          unifry[tweet.user.screen_name].isActive = true;
+          this.setState({ tweets: unifry[tweet.user.screen_name].tweets })
+          this.setState({ status: `@${tweet.user.screen_name} ` })
+        }
+      });
+      return unifry;
+    } catch (error) {
+      return this.state.data;
+    }
   }
   handleChange = (e) => {
     this.setState({
@@ -139,6 +170,11 @@ class Chatview extends Component {
     e.preventDefault();
     const token = ls.get('token');
     const secret = ls.get('secret');
+    let statusId = ''
+    if (this.state.tweets.length > 0) {
+      statusId = this.state.tweets[this.state.tweets.length - 1].id_str;
+      this.setState({ statusId })
+    }
     let cState = this;
     fetch(`/apis/${this.state.screen_name}/send`, {
       method: 'post',
@@ -146,7 +182,8 @@ class Chatview extends Component {
       body: JSON.stringify({
         "token": token,
         "secret": secret,
-        "status": cState.state.status
+        "status": cState.state.status,
+        "statusId": statusId
       })
     })
       .then(function (res) {
@@ -155,6 +192,7 @@ class Chatview extends Component {
       })
       .then(function (data) {
         console.log(data);
+        cState.getLatestTweete(ls.get('token'), ls.get('secret'), ls.get('screen_name'));
         cState.setState({ 'status': '' });
       })
   }
@@ -186,13 +224,13 @@ class Chatview extends Component {
                 <div className="recent_heading">
                   <h4>Recent</h4>
                 </div>
-                <div className="srch_bar">
+                {/* <div className="srch_bar">
                   <div className="stylish-input-group">
                     <input type="text" className="search-bar" placeholder="Search" />
                     <span className="input-group-addon">
                       <button type="button"> <i className="fa fa-search" aria-hidden="true"></i> </button>
                     </span> </div>
-                </div>
+                </div> */}
               </div>
               <div className="inbox_chat">
                 {chats}
@@ -200,9 +238,9 @@ class Chatview extends Component {
             </div>
             <div className="mesgs">
               <div className="msg_history">
-                {this.state.tweets.map((tweet, i) => <div className={tweet.isFeomMe ? "outgoing_msg" : "incoming_msg"} key={i}>
-                  <div className="incoming_msg_img"> <img src={tweet.user.profile_image_url_https} alt={tweet.user.name} /> </div>
-                  <div className="received_msg">
+                {this.state.tweets.map((tweet, i) => <div className={(tweet.user.screen_name === this.state.screen_name) ? "outgoing_msg" : "incoming_msg"} key={i}>
+                  {(tweet.user.screen_name === this.state.screen_name) ? null : (<div className="incoming_msg_img"> <img src={tweet.user.profile_image_url_https} alt={tweet.user.name} /> </div>)}
+                  <div className={(tweet.user.screen_name === this.state.screen_name) ? "sent_msg" : "received_msg"}>
                     <div className="received_withd_msg">
                       <p>{tweet.text}</p>
                       <span className="time_date">{tweet.created_at}</span></div>
@@ -241,7 +279,7 @@ class Chatview extends Component {
               </div>
               <div className="type_msg">
                 <div className="input_msg_write">
-                  <input id='status' type="text" className="write_msg" placeholder="Type a message" onChange={this.handleChange} />
+                  <input id='status' type="text" className="write_msg" placeholder="Type a message" value={this.state.status} onChange={this.handleChange} />
                   <button onClick={this.handleSubmit} className="msg_send_btn" type="button"><i className="material-icons md-light" aria-hidden="true">send</i></button>
                 </div>
               </div>
