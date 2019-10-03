@@ -120,7 +120,7 @@ app.post('/apis/:uid/send', function (req, res) {
     if (req.body.status && req.body.statusId) {
         // auto_populate_reply_metadata: true,
         let options = { status: req.body.status, in_reply_to_status_id: req.body.statusId };
-        if (req.body.status.indexOf(`@${req.params.uid}`) < 0) {
+        if (req.body.status.indexOf(`${req.params.uid}`) < 0) {
             options.auto_populate_reply_metadata = true;
         }
         client.post('statuses/update', options)
